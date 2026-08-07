@@ -10,7 +10,7 @@ title = os.environ["PR_TITLE"]
 body = os.environ.get("PR_BODY", "")
 
 prompt = f"""
-Analyze this PR.
+Analyze this pull request.
 
 Title:
 {title}
@@ -18,20 +18,17 @@ Title:
 Description:
 {body}
 
-Classify as one of:
+Classify as EXACTLY one:
 
 feature
 bug
 enhancement
 security
 
-Return JSON:
+Return ONLY valid JSON:
 
 {{
-  "label":"",
-  "summary":"",
-  "risk":"",
-  "deployment_notes":""
+  "label": ""
 }}
 """
 
