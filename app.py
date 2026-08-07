@@ -5,6 +5,8 @@ app = Flask(__name__)
 @app.route("/")
 def home():
     return "Employee Portal"
+def login():
+    return "success"
 
 if __name__ == "__main__":
     app.run()
