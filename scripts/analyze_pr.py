@@ -3,8 +3,8 @@ import json
 from openai import OpenAI
 
 client = OpenAI(
-    api_key=os.environ["XAI_API_KEY"],
-    base_url="https://api.x.ai/v1"
+    api_key=os.environ["GROQ_API_KEY"],
+    base_url="https://api.groq.com/openai/v1"
 )
 
 title = os.environ["PR_TITLE"]
@@ -34,11 +34,11 @@ Return ONLY valid JSON:
 """
 
 response = client.chat.completions.create(
-    model="grok-4-fast",
+    model="llama-3.3-70b-versatile",
     messages=[
         {
             "role": "system",
-            "content": "You are a PR classification assistant. Return only valid JSON."
+            "content": "Return only valid JSON. No markdown."
         },
         {
             "role": "user",
@@ -50,9 +50,8 @@ response = client.chat.completions.create(
 
 result = response.choices[0].message.content.strip()
 
-# Validate JSON
 try:
     data = json.loads(result)
     print(json.dumps(data))
-except json.JSONDecodeError:
+except Exception:
     print(json.dumps({"label": "enhancement"}))
