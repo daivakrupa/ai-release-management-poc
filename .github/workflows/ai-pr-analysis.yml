@@ -38,5 +38,22 @@ jobs:
         run: |
           python scripts/analyze_pr.py > result.json
 
+      - name: Apply Label
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+      
+            const result = JSON.parse(
+              fs.readFileSync('result.json', 'utf8')
+            );
+      
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              labels: [result.label]
+            });
+
       - name: Display Result
         run: cat result.json
