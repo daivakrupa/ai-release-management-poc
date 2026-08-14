@@ -1,9 +1,10 @@
 import os
 import json
-from google import genai
+from openai import OpenAI
 
-client = genai.Client(
-    api_key=os.environ["GEMINI_API_KEY"]
+client = OpenAI(
+    api_key=os.environ["XAI_API_KEY"],
+    base_url="https://api.x.ai/v1"
 )
 
 title = os.environ["PR_TITLE"]
@@ -32,9 +33,26 @@ Return ONLY valid JSON:
 }}
 """
 
-response = client.models.generate_content(
-    model="gemini-2.5-flash-lite",
-    contents=prompt
+response = client.chat.completions.create(
+    model="grok-4-fast",
+    messages=[
+        {
+            "role": "system",
+            "content": "You are a PR classification assistant. Return only valid JSON."
+        },
+        {
+            "role": "user",
+            "content": prompt
+        }
+    ],
+    temperature=0
 )
 
-print(response.text)
+result = response.choices[0].message.content.strip()
+
+# Validate JSON
+try:
+    data = json.loads(result)
+    print(json.dumps(data))
+except json.JSONDecodeError:
+    print(json.dumps({"label": "enhancement"}))
