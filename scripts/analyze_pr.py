@@ -1,16 +1,17 @@
 import os
 import json
-from google import genai
+from openai import OpenAI
 
-client = genai.Client(
-    api_key=os.environ["GEMINI_API_KEY"]
+client = OpenAI(
+    api_key=os.environ["GROQ_API_KEY"],
+    base_url="https://api.groq.com/openai/v1"
 )
 
 title = os.environ["PR_TITLE"]
 body = os.environ.get("PR_BODY", "")
 
 prompt = f"""
-Analyze this PR.
+Analyze this pull request.
 
 Title:
 {title}
@@ -18,26 +19,39 @@ Title:
 Description:
 {body}
 
-Classify as one of:
+Classify as EXACTLY one:
 
 feature
 bug
 enhancement
 security
 
-Return JSON:
+Return ONLY valid JSON:
 
 {{
-  "label":"",
-  "summary":"",
-  "risk":"",
-  "deployment_notes":""
+  "label": ""
 }}
 """
 
-response = client.models.generate_content(
-    model="gemini-2.5-flash",
-    contents=prompt
+response = client.chat.completions.create(
+    model="llama-3.3-70b-versatile",
+    messages=[
+        {
+            "role": "system",
+            "content": "Return only valid JSON. No markdown."
+        },
+        {
+            "role": "user",
+            "content": prompt
+        }
+    ],
+    temperature=0
 )
 
-print(response.text)
+result = response.choices[0].message.content.strip()
+
+try:
+    data = json.loads(result)
+    print(json.dumps(data))
+except Exception:
+    print(json.dumps({"label": "enhancement"}))

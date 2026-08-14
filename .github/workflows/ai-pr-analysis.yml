@@ -13,27 +13,30 @@ permissions:
   contents: read
 
 jobs:
-
   analyze:
-
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
       - name: Install Dependencies
         run: |
-          pip install google-genai
+          python -m pip install --upgrade pip
+          pip install openai
 
-      - name: Run AI Analysis
+      - name: Analyze PR
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |
-          python scripts/analyze_pr.py
+          python scripts/analyze_pr.py > result.json
+
+      - name: Display Result
+        run: cat result.json
